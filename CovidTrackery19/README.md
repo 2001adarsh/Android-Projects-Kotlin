@@ -2,4 +2,4 @@
 
 ## Images added:
 
-<kbd><img src="images/1.jpeg" width=200></kbd> 
+<kbd><img src="images/1.jpg" width=200></kbd> 

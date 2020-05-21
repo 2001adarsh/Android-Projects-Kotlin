@@ -4,12 +4,18 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -25,6 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
+import kotlinx.android.synthetic.main.activity_maps2_activiy.*
 
 class Maps2Activiy : AppCompatActivity() , OnMapReadyCallback {
 
@@ -39,6 +46,33 @@ class Maps2Activiy : AppCompatActivity() , OnMapReadyCallback {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map2) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        search_edit_frame.setOnEditorActionListener(TextView.OnEditorActionListener { textview, actionId, keyEvent ->
+            if(actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == EditorInfo.IME_ACTION_DONE ||
+                    keyEvent.action == KeyEvent.ACTION_DOWN ||
+                    keyEvent.action == KeyEvent.KEYCODE_ENTER) {
+                // execute our method for searching
+                geoLocate()
+            }
+            false
+        })
+
+        gps_go.setOnClickListener {
+            setUpLocation()
+        }
+    }
+
+    private fun geoLocate() {
+        Log.d("GeoLocate", "geoLocating")
+        val searchString = search_edit_frame.text.toString()
+        val geocoder = Geocoder(this@Maps2Activiy)
+        val list = geocoder.getFromLocationName(searchString, 1)
+        if(list.size > 0){
+            val address = list[0]
+            Log.d("GeoLocate: ", "location: "+ address.toString())
+            moveCamera(LatLng(address.latitude, address.longitude), 15f, address.getAddressLine(0))
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -60,8 +94,11 @@ class Maps2Activiy : AppCompatActivity() , OnMapReadyCallback {
         mMap = p0
     }
 
-    private fun moveCamera(ltnlog:LatLng, zoom:Float){
+    private fun moveCamera(ltnlog:LatLng, zoom:Float, title: String){
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ltnlog , zoom))
+        if(title != "My Location"){
+            mMap.addMarker(MarkerOptions().title(title).position(ltnlog))
+        }
     }
 
     //Setting up different Listener
@@ -71,8 +108,11 @@ class Maps2Activiy : AppCompatActivity() , OnMapReadyCallback {
         location.addOnCompleteListener {
             if(it.isSuccessful){
                 val currentLocation = it.result
-                moveCamera(LatLng(currentLocation!!.latitude, currentLocation.longitude), 15f)
+                moveCamera(LatLng(currentLocation!!.latitude, currentLocation.longitude), 15f, "My Location")
                 mMap.isMyLocationEnabled = true
+                mMap.uiSettings.apply {
+                    isMyLocationButtonEnabled = false
+                }
             }else{
                 Toast.makeText(this, "UnAble to get current Location", Toast.LENGTH_SHORT).show()
             }

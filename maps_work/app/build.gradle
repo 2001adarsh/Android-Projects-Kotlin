@@ -38,4 +38,5 @@ dependencies {
 
     //Google play services location
     implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }

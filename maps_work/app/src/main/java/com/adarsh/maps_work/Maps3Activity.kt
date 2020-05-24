@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
+import android.os.AsyncTask
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,17 +18,17 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.core.location.LocationManagerCompat.isLocationEnabled
-import com.adarsh.maps_work.helpers.FetchURL
-import com.adarsh.maps_work.helpers.TaskLoadedCallback
 import com.google.android.gms.location.FusedLocationProviderClient
-
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_maps3.*
+import okhttp3.OkHttp
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.lang.Exception
 
 class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
 
@@ -120,7 +121,6 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
         val location = mFusedLocationProviderClient.lastLocation
         location.addOnCompleteListener {
             if(it.isSuccessful){
-
                 val currentLocation = it.result
                 moveCamera(LatLng(currentLocation!!.latitude, currentLocation.longitude), 15f, "My Location")
                 map.isMyLocationEnabled = true
@@ -131,7 +131,6 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
                     isCompassEnabled = true
                     isRotateGesturesEnabled = true
                 }
-
                 getRoad(currentLocation);
             }else{
                 Toast.makeText(this, "Unable to get current Location", Toast.LENGTH_LONG).show()
@@ -148,11 +147,29 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
         val origin = "${currentLocation.latitude},${currentLocation.longitude}"
         val finalPlace = MarkerOptions().position(LatLng(30.772926, 76.576455)).title("Chandigarh University")
         val destination = "30.772926,76.576455"
-        var url = "http://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=driving" +
-                "key=${getString(R.string.google_maps_key)}"
+        val mode = "driving"
+        var url = "https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${destination}&mode=$mode" +
+                "&key=${getString(R.string.google_maps_key)}"
         map.addMarker(finalPlace)
         Log.d(TAG, url)
         return url
+    }
+
+    inner class getDirection(val url:String): AsyncTask<Void, Void, List<List<LatLng>>>(){
+        override fun doInBackground(vararg p0: Void?): List<List<LatLng>> {
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+            val data = response.body?.string()
+            val result = ArrayList<List<LatLng>>()
+            try {
+
+            }catch (e:Exception){
+
+            }
+            return result
+        }
+
     }
 
     private fun moveCamera(ltnlog:LatLng, zoom:Float, title: String){

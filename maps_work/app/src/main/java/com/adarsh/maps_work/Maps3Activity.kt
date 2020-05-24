@@ -5,6 +5,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -17,25 +18,25 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.location.LocationManagerCompat.isLocationEnabled
+import com.adarsh.maps_work.helpers.FetchURL
+import com.adarsh.maps_work.helpers.TaskLoadedCallback
 import com.google.android.gms.location.FusedLocationProviderClient
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.activity_maps3.*
 
-class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
+class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
 
     private lateinit var map: GoogleMap
     private val locationManager by lazy {
         getSystemService(Context.LOCATION_SERVICE) as LocationManager
     }
     private val TAG = Maps3Activity::class.java.simpleName
+    private var polyline: Polyline? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,16 +120,39 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
         val location = mFusedLocationProviderClient.lastLocation
         location.addOnCompleteListener {
             if(it.isSuccessful){
+
                 val currentLocation = it.result
                 moveCamera(LatLng(currentLocation!!.latitude, currentLocation.longitude), 15f, "My Location")
                 map.isMyLocationEnabled = true
                 map.uiSettings.apply {
                     isMyLocationButtonEnabled = true
+                    isZoomGesturesEnabled = true
+                    isZoomControlsEnabled = true
+                    isCompassEnabled = true
+                    isRotateGesturesEnabled = true
                 }
+
+                getRoad(currentLocation);
             }else{
-                Toast.makeText(this, "UnAble to get current Location", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Unable to get current Location", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun getRoad(currentLocation: Location){
+        val url = getUrl(currentLocation)
+       // FetchURL(this@Maps3Activity).execute(url, "driving")
+    }
+
+    private fun getUrl(currentLocation: Location):String{
+        val origin = "${currentLocation.latitude},${currentLocation.longitude}"
+        val finalPlace = MarkerOptions().position(LatLng(30.772926, 76.576455)).title("Chandigarh University")
+        val destination = "30.772926,76.576455"
+        var url = "http://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=driving" +
+                "key=${getString(R.string.google_maps_key)}"
+        map.addMarker(finalPlace)
+        Log.d(TAG, url)
+        return url
     }
 
     private fun moveCamera(ltnlog:LatLng, zoom:Float, title: String){
@@ -191,4 +215,9 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
                 dialogInterface.dismiss()
             }.show()
     }
+
+
+
+
+
 }

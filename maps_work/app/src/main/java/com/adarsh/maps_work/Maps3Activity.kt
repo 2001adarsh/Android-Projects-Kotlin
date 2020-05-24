@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -21,7 +23,9 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_maps3.*
 
@@ -31,6 +35,7 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
     private val locationManager by lazy {
         getSystemService(Context.LOCATION_SERVICE) as LocationManager
     }
+    private val TAG = Maps3Activity::class.java.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +47,12 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        setMapStyle(map)
+        setMapLongClick(map)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -71,6 +82,22 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
         else -> super.onOptionsItemSelected(item)
     }
 
+    // Styling the Map
+    private fun setMapStyle(map: GoogleMap) {
+        try {
+            // Customize the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            val success = map.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(this, R.raw.dark_map_style)
+                )
+            if(!success) {
+                Log.e(TAG, "Styling parsing failed.")
+            }
+        }catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "Can't find style. Error: ", e)
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onStart() {
         super.onStart()
@@ -96,7 +123,7 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
                 moveCamera(LatLng(currentLocation!!.latitude, currentLocation.longitude), 15f, "My Location")
                 map.isMyLocationEnabled = true
                 map.uiSettings.apply {
-                    isMyLocationButtonEnabled = false
+                    isMyLocationButtonEnabled = true
                 }
             }else{
                 Toast.makeText(this, "UnAble to get current Location", Toast.LENGTH_LONG).show()
@@ -107,22 +134,21 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback {
     private fun moveCamera(ltnlog:LatLng, zoom:Float, title: String){
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(ltnlog , zoom))
         if(title != "My Location"){
-            map.addMarker(MarkerOptions().title(title).position(ltnlog))
+            map.addMarker(MarkerOptions().title(title).position(ltnlog) )
         }
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
+    private fun setMapLongClick(map:GoogleMap) {
+        map.setOnMapLongClickListener {
+            map.addMarker(
+                MarkerOptions()
+                    .position(it)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                //icon for changing the color of the marker.
+            )
+        }
     }
+
 
     //Requesting permissions
     @RequiresApi(Build.VERSION_CODES.M)

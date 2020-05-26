@@ -1,5 +1,6 @@
 package com.adarsh.maps_work
 
+import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -24,6 +25,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.maps.android.clustering.ClusterManager
+import com.google.maps.android.collections.MarkerManager
 import kotlinx.android.synthetic.main.activity_maps3.*
 import okhttp3.OkHttp
 import okhttp3.OkHttpClient
@@ -38,6 +41,9 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
     }
     private val TAG = Maps3Activity::class.java.simpleName
     private var polyline: Polyline? = null
+
+    private lateinit var clusterManager: ClusterManager<ClusterMarkers>
+    private lateinit var myClusterManagerRender : MyClusterManagerRender
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,6 +106,21 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
         }
     }
 
+    private fun addMapMarkers(){
+        clusterManager = ClusterManager<ClusterMarkers>(this,map)
+        myClusterManagerRender = MyClusterManagerRender(this, map, clusterManager)
+        clusterManager.renderer = myClusterManagerRender
+
+        val title = "Rohtak"
+        val snippet = "Driver is coming"
+        val avatar:Int = R.drawable.marker
+        val ltnlog:LatLng = LatLng(28.840656, 76.603336)
+
+        val clusterMarkers = ClusterMarkers(ltnlog, title, snippet, avatar)
+        clusterManager.addItem(clusterMarkers)
+        clusterManager.cluster()
+    }
+
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onStart() {
         super.onStart()
@@ -140,17 +161,22 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
 
     private fun getRoad(currentLocation: Location){
         val url = getUrl(currentLocation)
+        addMapMarkers()
        // FetchURL(this@Maps3Activity).execute(url, "driving")
     }
 
     private fun getUrl(currentLocation: Location):String{
         val origin = "${currentLocation.latitude},${currentLocation.longitude}"
         val finalPlace = MarkerOptions().position(LatLng(30.772926, 76.576455)).title("Chandigarh University")
+           // .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker)) .flat(true).anchor(0.5F, 0.5F)
+           // .rotation(90.0F) .zIndex(0.5F)
+
         val destination = "30.772926,76.576455"
         val mode = "driving"
         var url = "https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${destination}&mode=$mode" +
                 "&key=${getString(R.string.google_maps_key)}"
         map.addMarker(finalPlace)
+
         Log.d(TAG, url)
         return url
     }
@@ -185,6 +211,7 @@ class Maps3Activity : AppCompatActivity(), OnMapReadyCallback{
                 MarkerOptions()
                     .position(it)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .draggable(true)
                 //icon for changing the color of the marker.
             )
         }

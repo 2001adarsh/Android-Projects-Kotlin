@@ -28,6 +28,8 @@ class Main3Activity : AppCompatActivity() {
         addView((layoutInflater.inflate(R.layout.dummy_2_resource , null) as FrameLayout))
     }
 
+    //-----------------------------------------------------------------------------
+    // Here's what the app should do to add a view to the ViewPager.
     private fun addView(newPage: View){
         val pageIndex: Int = mainPagerAdapter.addView(newPage)
 
@@ -36,6 +38,9 @@ class Main3Activity : AppCompatActivity() {
         mainPagerAdapter.notifyDataSetChanged()
     }
 
+
+    //-----------------------------------------------------------------------------
+    // Here's what the app should do to remove a view from the ViewPager.
     private fun removeView(newPage: View){
         var pageIndex: Int = mainPagerAdapter.removeView(viewPagerinst, newPage)
         //If you want to choose what page to display if this page is deleted
@@ -44,8 +49,13 @@ class Main3Activity : AppCompatActivity() {
         viewPagerinst.currentItem = pageIndex
     }
 
+    //-----------------------------------------------------------------------------
+    // Here's what the app should do to get the currently displayed page.
     private fun getCurrentPage(): View = mainPagerAdapter.getView(viewPagerinst.currentItem)
 
+    //-----------------------------------------------------------------------------
+    // Here's what the app should do to set the currently displayed page.  "pageToShow" must
+    // currently be in the adapter, or this will crash.
     private fun setCurrentPage(pageToShow: View)=
         viewPagerinst.setCurrentItem(mainPagerAdapter.getItemPosition(pageToShow), true)
 

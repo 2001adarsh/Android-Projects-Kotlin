@@ -1,6 +1,5 @@
 package com.adarsh.maps_work
 
-import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent

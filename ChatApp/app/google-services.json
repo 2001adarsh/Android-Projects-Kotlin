@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1081160434895",
+    "firebase_url": "https://chat-app-c1f39.firebaseio.com",
+    "project_id": "chat-app-c1f39",
+    "storage_bucket": "chat-app-c1f39.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1081160434895:android:8cefe4e18b0ad64c1fe3ba",
+        "android_client_info": {
+          "package_name": "com.adarsh.chatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1081160434895-7711rdhh76pfn3v88tvfd6m7nlak8vql.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2uKrbJGrMi91rqPlaP-VcSzLzJtj-2H4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1081160434895-7711rdhh76pfn3v88tvfd6m7nlak8vql.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

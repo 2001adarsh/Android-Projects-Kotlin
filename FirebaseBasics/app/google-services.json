@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "651663294428",
+    "firebase_url": "https://fir-basics-e0e14.firebaseio.com",
+    "project_id": "fir-basics-e0e14",
+    "storage_bucket": "fir-basics-e0e14.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651663294428:android:52ab794d9cea82d1281919",
+        "android_client_info": {
+          "package_name": "com.adarsh.firebasebasics"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "651663294428-b2d2olt4o0qetumdat5f3msku8ev3oep.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD93JpeZmQIUU6I-J82kdzlV4eoKTzvlGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "651663294428-b2d2olt4o0qetumdat5f3msku8ev3oep.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

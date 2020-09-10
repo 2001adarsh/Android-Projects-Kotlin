@@ -1,18 +1,71 @@
 package com.adarsh.firebasebasics
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.AuthUI.IdpConfig.*
+import com.firebase.ui.auth.ErrorCodes
+import com.firebase.ui.auth.IdpResponse
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
+import kotlin.collections.ArrayList
+
 
 class MainActivity : AppCompatActivity() {
+
+    val RC_SIGN_IN:Int = 1102
+    val auth = FirebaseAuth.getInstance()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        //val i = 0/0 for crashing the app, to get analytics.
+        val crashlytics = FirebaseCrashlytics.getInstance()
+        crashlytics.log("my message")
+        if(auth.currentUser != null){
+            firebaseDatabaseCalled()
+        }else{
+            startActivityForResult(
+                AuthUI.getInstance()
+                    .createSignInIntentBuilder()
+                    .setAvailableProviders(
+                        Arrays.asList(
+                            GoogleBuilder().build(),
+                            EmailBuilder().build(),
+                            PhoneBuilder().build()
+                        )
+                    )
+                    .build(),
+                RC_SIGN_IN
+            )
+        }
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+            if(requestCode == RC_SIGN_IN){
+                if(resultCode == RESULT_OK){
+                    firebaseDatabaseCalled()
+                }
+            } else{
+                val response = IdpResponse.fromResultIntent(data)
+                //Sign In failed.
+                if(response == null){
+                    return;
+                }
+                if(response.error?.errorCode == ErrorCodes.NO_NETWORK){
+                    //show no network
+                    return;
+                }
+                //show unkown error
+            }
+    }
+
+    fun firebaseDatabaseCalled(){
         val dbRef = FirebaseDatabase.getInstance().reference //takes reference of root node.
         val notebook = ArrayList<String>()
 //        val arrayAdapter = ArrayAdapter<String>(this, R.layout.item_row, R.id.textView2, notebook)
@@ -42,13 +95,14 @@ class MainActivity : AppCompatActivity() {
             val subtitle = subtitle_text.text.toString()
 
             val n = Note(title, subtitle)
-            dbRef.child("Save Node").push().setValue(n)
+            auth.currentUser?.uid.toString()
+                .let { it1 -> dbRef.child("Save Node").child(it1).push().setValue(n) }
 
         }
 
         //Read to Database.
 
-        dbRef.child("Save Node").addChildEventListener( object : ChildEventListener {
+        dbRef.child("Save Node").child(auth.currentUser?.uid.toString()).addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 //Called when a new data node is inserted in "Save Node".
                 //val gettingString = snapshot.getValue(String::class.java) //For getting Primitive
@@ -61,15 +115,19 @@ class MainActivity : AppCompatActivity() {
                 notebook2.add(objectNote!!)
                 adapter.notifyDataSetChanged()
             }
+
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 //An existing node is modified
             }
+
             override fun onChildRemoved(snapshot: DataSnapshot) {
                 //When data at subnode is removed.
             }
+
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
                 //When position of subnode is changed.
             }
+
             override fun onCancelled(error: DatabaseError) {
                 //When Read operation fails.
             }
@@ -77,10 +135,11 @@ class MainActivity : AppCompatActivity() {
 
         //Value Event Listener, whenever there is change in database, it will give the whole value
         //of database at once. While childEvent listener will give the recent added one.
-        dbRef.child("Todo").addValueEventListener(object :ValueEventListener{
+        dbRef.child("Todo").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 //Gets the entire database regardless of operation.
             }
+
             override fun onCancelled(error: DatabaseError) {
             }
 
